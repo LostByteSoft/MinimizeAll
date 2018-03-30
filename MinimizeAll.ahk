@@ -13,7 +13,7 @@
 
 	SetEnv, title, MinimizeAll
 	SetEnv, mode, Minimize all F12
-	SetEnv, version, Version 2018-02-21-0648
+	SetEnv, version, Version 2018-03-30-1603
 	SetEnv, Author, LostByteSoft
 	SetEnv, icofolder, C:\Program Files\Common Files
 	Setenv, logoicon, ico_HotKeys.ico
@@ -25,7 +25,6 @@
 	;; specific files
 
 	;; Common ico
-
 	FileInstall, ico_about.ico, %icofolder%\ico_about.ico, 0
 	FileInstall, ico_lock.ico, %icofolder%\ico_lock.ico, 0
 	FileInstall, ico_options.ico, %icofolder%\ico_options.ico, 0
@@ -34,34 +33,49 @@
 	FileInstall, ico_debug.ico, %icofolder%\ico_debug.ico, 0
 	FileInstall, ico_HotKeys.ico, %icofolder%\ico_HotKeys.ico, 0
 	FileInstall, ico_pause.ico, %icofolder%\ico_pause.ico, 0
+	FileInstall, ico_loupe.ico, %icofolder%\ico_loupe.ico, 0
+	FileInstall, ico_folder.ico, %icofolder%\ico_folder.ico, 0
+
+;;--- Menu Tray options ---
 
 	Menu, Tray, NoStandard
 	Menu, tray, add, ---=== %title% ===---, about
 	Menu, Tray, Icon, ---=== %title% ===---, %icofolder%\%logoicon%
 	Menu, tray, add, Show logo, GuiLogo
-	Menu, tray, add, Secret MsgBox, secret					; Secret MsgBox, just show all options and variables of the program
+	Menu, tray, add, Secret MsgBox, secret					; Secret MsgBox, just show all options and variables of the program.
 	Menu, Tray, Icon, Secret MsgBox, %icofolder%\ico_lock.ico
-	Menu, tray, add, About && ReadMe, author
+	Menu, tray, add, About && ReadMe, author				; infos about author
 	Menu, Tray, Icon, About && ReadMe, %icofolder%\ico_about.ico
-	Menu, tray, add, Author %author%, about
+	Menu, tray, add, Author %author%, about					; author msg box
 	menu, tray, disable, Author %author%
-	Menu, tray, add, %version%, about
+	Menu, tray, add, %version%, about					; version of the software
 	menu, tray, disable, %version%
+	Menu, tray, add, Open project web page, webpage				; open web page project
+	Menu, Tray, Icon, Open project web page, %icofolder%\ico_HotKeys.ico
 	Menu, tray, add,
 	Menu, tray, add, --== Control ==--, about
 	Menu, Tray, Icon, --== Control ==--, %icofolder%\ico_options.ico
+	;menu, tray, add, Show Gui (Same as click), msgbox2			; Default gui open
+	;Menu, Tray, Icon, Show Gui (Same as click), %icofolder%\ico_loupe.ico
+	;Menu, Tray, Default, Show Gui (Same as click)
+	;Menu, Tray, Click, 1
+	Menu, tray, add, Set Debug (Toggle), debug				; debug msg
+	Menu, Tray, Icon, Set Debug (Toggle), %icofolder%\ico_debug.ico
+	Menu, tray, add, Open A_WorkingDir, A_WorkingDir			; open where the exe is
+	Menu, Tray, Icon, Open A_WorkingDir, %icofolder%\ico_folder.ico
+	Menu, tray, add,
 	Menu, tray, add, Exit %title%, ExitApp					; Close exit program
 	Menu, Tray, Icon, Exit %title%, %icofolder%\ico_shut.ico
-	Menu, tray, add, Refresh (ini mod), doReload 				; Reload the script.
-	Menu, Tray, Icon, Refresh (ini mod), %icofolder%\ico_reboot.ico
-	Menu, tray, add, Set Debug (Toggle), debug
-	Menu, Tray, Icon, Set Debug (Toggle), %icofolder%\ico_debug.ico
-	Menu, tray, add, Pause (Toggle), pause
+	Menu, tray, add, Refresh (Ini mod), doReload 				; Reload the script.
+	Menu, Tray, Icon, Refresh (Ini mod), %icofolder%\ico_reboot.ico
+	Menu, tray, add, Pause (Toggle), pause					; pause the script
 	Menu, Tray, Icon, Pause (Toggle), %icofolder%\ico_pause.ico
 	Menu, tray, add,
-	Menu, tray, add, --= Options =--, about
-	Menu, Tray, Icon, --= Options =--, %icofolder%\ico_options.ico
+	Menu, tray, add, --== Options ==--, about
+	Menu, Tray, Icon, --== Options ==--, %icofolder%\ico_options.ico
 	Menu, tray, add, Do it now !, do
+	Menu, Tray, Default, Do it now !
+	Menu, Tray, Click, 1
 	Menu, tray, add, Undo minimize !, undo
 	Menu, tray, add,
 	Menu, Tray, Tip, %mode%
@@ -100,20 +114,33 @@ F12::
 	Setenv, minim, 0
 	Return
 
-;;--- Debug Pause ---
+;;--- Quit Debug Pause ---
 
-debug:
-	IfEqual, debug, 0, goto, debug1
-	IfEqual, debug, 1, goto, debug0
+;; Escape::		; Debug purpose
+	ExitApp
 
-	debug0:
-	SetEnv, debug, 0
-	TrayTip, %title%, Deactivated ! debug=%debug%, 1, 2
+GuiClose:
+	Gui, destroy
+	goto, start
+
+ExitApp:
+	ExitApp
+
+doReload:
+	Reload
+	sleep, 100
+	goto, ExitApp
+
+Debug:
+	IfEqual, debug, 0, goto, enable
+	IfEqual, debug, 1, goto, disable
+
+	enable:
+	SetEnv, debug, 1
 	Goto, start
 
-	debug1:
-	SetEnv, debug, 1
-	TrayTip, %title%, Activated ! debug=%debug%, 1, 2
+	disable:
+	SetEnv, debug, 0
 	Goto, start
 
 pause:
@@ -121,31 +148,14 @@ pause:
 	Ifequal, pause, 1, goto, unpaused
 
 	paused:
+	Menu, Tray, Icon, %icofolder%\ico_pause.ico
 	SetEnv, pause, 1
-	goto, sleep
+	goto, start
 
 	unpaused:	
-	Menu, Tray, Icon, %logoicon%
+	Menu, Tray, Icon, %icofolder%\ico_time_w.ico
 	SetEnv, pause, 0
 	Goto, start
-
-	sleep:
-	Menu, Tray, Icon, %icofolder%\ico_pause.ico
-	sleep2:
-	sleep, 500000
-	goto, sleep2
-
-;;--- Quit (escape , esc)
-
-Escape::
-Close:
-ExitApp:
-	ExitApp
-
-doReload:
-	Reload
-	sleep, 100
-	goto, Close
 
 ;;--- Tray Bar (must be at end of file) ---
 
@@ -175,6 +185,15 @@ GuiLogo:
 	4GuiClose:
 	Gui 4:Cancel
 	return
+
+A_WorkingDir:
+	IfEqual, debug, 1, msgbox, run, explorer.exe "%A_WorkingDir%"
+	run, explorer.exe "%A_WorkingDir%"
+	Return
+
+webpage:
+	run, https://github.com/LostByteSoft/%title%
+	Return
 
 ;;--- End of script ---
 ;
