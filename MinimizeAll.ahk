@@ -13,28 +13,34 @@
 
 	SetEnv, title, MinimizeAll
 	SetEnv, mode, Minimize all F12
-	SetEnv, version, Version 2018-03-30-1603
+	SetEnv, version, Version 2018-05-02-1353
 	SetEnv, Author, LostByteSoft
 	SetEnv, icofolder, C:\Program Files\Common Files
-	Setenv, logoicon, ico_HotKeys.ico
+	Setenv, logoicon, ico_min.ico
 	SetEnv, pause, 0
 	SetEnv, debug, 0
 	Setenv, minim, 0
 	SetEnv, delay, 120
+	SetEnv, exitaftermin, 0
 
 	;; specific files
+	FileInstall, MinimizeAll.ini, MinimizeAll.ini,0
+	FileInstall, ico_txt.ico, %icofolder%\ico_txt.ico, 0
+	FileInstall, ico_min.ico, %icofolder%\ico_min.ico, 0
 
 	;; Common ico
-	FileInstall, ico_about.ico, %icofolder%\ico_about.ico, 0
-	FileInstall, ico_lock.ico, %icofolder%\ico_lock.ico, 0
-	FileInstall, ico_options.ico, %icofolder%\ico_options.ico, 0
-	FileInstall, ico_reboot.ico, %icofolder%\ico_reboot.ico, 0
-	FileInstall, ico_shut.ico, %icofolder%\ico_shut.ico, 0
-	FileInstall, ico_debug.ico, %icofolder%\ico_debug.ico, 0
-	FileInstall, ico_HotKeys.ico, %icofolder%\ico_HotKeys.ico, 0
-	FileInstall, ico_pause.ico, %icofolder%\ico_pause.ico, 0
-	FileInstall, ico_loupe.ico, %icofolder%\ico_loupe.ico, 0
-	FileInstall, ico_folder.ico, %icofolder%\ico_folder.ico, 0
+	FileInstall, SharedIcons\ico_about.ico, %icofolder%\ico_about.ico, 0
+	FileInstall, SharedIcons\ico_lock.ico, %icofolder%\ico_lock.ico, 0
+	FileInstall, SharedIcons\ico_options.ico, %icofolder%\ico_options.ico, 0
+	FileInstall, SharedIcons\ico_reboot.ico, %icofolder%\ico_reboot.ico, 0
+	FileInstall, SharedIcons\ico_shut.ico, %icofolder%\ico_shut.ico, 0
+	FileInstall, SharedIcons\ico_debug.ico, %icofolder%\ico_debug.ico, 0
+	FileInstall, SharedIcons\ico_HotKeys.ico, %icofolder%\ico_HotKeys.ico, 0
+	FileInstall, SharedIcons\ico_pause.ico, %icofolder%\ico_pause.ico, 0
+	FileInstall, SharedIcons\ico_loupe.ico, %icofolder%\ico_loupe.ico, 0
+	FileInstall, SharedIcons\ico_folder.ico, %icofolder%\ico_folder.ico, 0
+
+	IniRead, delay, MinimizeAll.ini, options, exitaftermin
 
 ;;--- Menu Tray options ---
 
@@ -63,6 +69,10 @@
 	Menu, Tray, Icon, Set Debug (Toggle), %icofolder%\ico_debug.ico
 	Menu, tray, add, Open A_WorkingDir, A_WorkingDir			; open where the exe is
 	Menu, Tray, Icon, Open A_WorkingDir, %icofolder%\ico_folder.ico
+
+	Menu, tray, add, Open Source, Source
+	Menu, Tray, Icon, Open Source, %icofolder%\ico_txt.ico
+
 	Menu, tray, add,
 	Menu, tray, add, Exit %title%, ExitApp					; Close exit program
 	Menu, Tray, Icon, Exit %title%, %icofolder%\ico_shut.ico
@@ -73,8 +83,8 @@
 	Menu, tray, add,
 	Menu, tray, add, --== Options ==--, about
 	Menu, Tray, Icon, --== Options ==--, %icofolder%\ico_options.ico
-	Menu, tray, add, Do it now !, do
-	Menu, Tray, Default, Do it now !
+	Menu, tray, add, Do it now ! F12, do
+	Menu, Tray, Default, Do it now ! F12
 	Menu, Tray, Click, 1
 	Menu, tray, add, Undo minimize !, undo
 	Menu, tray, add,
@@ -82,7 +92,7 @@
 
 ;;--- Software start here ---
 
-	Menu, Tray, Icon, %icofolder%\ico_HotKeys.ico
+	Menu, Tray, Icon, %icofolder%\ico_min.ico
 
 start:
 	IfEqual, debug, 1, MsgBox, START: begin sleep
@@ -92,7 +102,8 @@ start:
 	sleep, %delay%000
 	skip:
 	WinMinimizeAll
-	return
+
+	;;IfEqual, exitaftermin, 0, goto, ExitApp
 
 loop:
 F12::
@@ -113,6 +124,11 @@ F12::
 	sleep, 1000
 	Setenv, minim, 0
 	Return
+
+source:
+	FileInstall, MinimizeAll.ahk, MinimizeAll.ahk, 1
+	run, "%A_ScriptDir%\MinimizeAll.ahk"
+	return
 
 ;;--- Quit Debug Pause ---
 
@@ -168,7 +184,7 @@ author:
 	Return
 
 secret:
-	msgbox, 49, %title%, title=%title% mode=%mode% version=%version% author=%author% logoicon=%logoicon% A_ScriptDir=%A_ScriptDir%`n`nDebug=%debug%
+	msgbox, 49, %title%, title=%title% mode=%mode% version=%version% author=%author% logoicon=%logoicon% A_ScriptDir=%A_ScriptDir%`n`nDebug=%debug% exitaftermin=%exitaftermin%
 	Return
 
 Version:
@@ -178,7 +194,7 @@ Version:
 GuiLogo:
 	Gui, 4:Add, Picture, x25 y25 w400 h400, %icofolder%\%logoicon%
 	Gui, 4:Show, w450 h450, %title% Logo
-	;;Gui, 4:Color, 000000
+	Gui, 4:Color, 000000
 	Sleep, 500
 	Return
 
