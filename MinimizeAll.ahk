@@ -13,15 +13,15 @@
 
 	SetEnv, title, MinimizeAll
 	SetEnv, mode, Minimize all F12
-	SetEnv, version, Version 2018-05-02-1353
+	SetEnv, version, Version 2018-05-08-0540
 	SetEnv, Author, LostByteSoft
 	SetEnv, icofolder, C:\Program Files\Common Files
 	Setenv, logoicon, ico_min.ico
 	SetEnv, pause, 0
 	SetEnv, debug, 0
-	Setenv, minim, 0
 	SetEnv, delay, 120
 	SetEnv, exitaftermin, 0
+	SetEnv, variables,delay=%delay% exitaftermin=%exitaftermin%
 
 	;; specific files
 	FileInstall, MinimizeAll.ini, MinimizeAll.ini,0
@@ -40,7 +40,8 @@
 	FileInstall, SharedIcons\ico_loupe.ico, %icofolder%\ico_loupe.ico, 0
 	FileInstall, SharedIcons\ico_folder.ico, %icofolder%\ico_folder.ico, 0
 
-	IniRead, delay, MinimizeAll.ini, options, exitaftermin
+	IniRead, exitaftermin, MinimizeAll.ini, options, exitaftermin
+	IniRead, delay, MinimizeAll.ini, options, delay
 
 ;;--- Menu Tray options ---
 
@@ -69,10 +70,8 @@
 	Menu, Tray, Icon, Set Debug (Toggle), %icofolder%\ico_debug.ico
 	Menu, tray, add, Open A_WorkingDir, A_WorkingDir			; open where the exe is
 	Menu, Tray, Icon, Open A_WorkingDir, %icofolder%\ico_folder.ico
-
 	Menu, tray, add, Open Source, Source
 	Menu, Tray, Icon, Open Source, %icofolder%\ico_txt.ico
-
 	Menu, tray, add,
 	Menu, tray, add, Exit %title%, ExitApp					; Close exit program
 	Menu, Tray, Icon, Exit %title%, %icofolder%\ico_shut.ico
@@ -83,10 +82,11 @@
 	Menu, tray, add,
 	Menu, tray, add, --== Options ==--, about
 	Menu, Tray, Icon, --== Options ==--, %icofolder%\ico_options.ico
+	Menu, tray, add, Open MinimizeAll.ini, ini
+	Menu, Tray, Icon, Open MinimizeAll.ini, %icofolder%\ico_txt.ico
+	Menu, tray, add,
 	Menu, tray, add, Do it now ! F12, do
-	Menu, Tray, Default, Do it now ! F12
-	Menu, Tray, Click, 1
-	Menu, tray, add, Undo minimize !, undo
+	Menu, tray, add, Un Do it !, undo
 	Menu, tray, add,
 	Menu, Tray, Tip, %mode%
 
@@ -102,33 +102,39 @@ start:
 	sleep, %delay%000
 	skip:
 	WinMinimizeAll
-
-	;;IfEqual, exitaftermin, 0, goto, ExitApp
+	Sleep, 3000
+	IfEqual, debug, 1, msgbox, %variables%
+	IfEqual, exitaftermin, 1, goto, ExitApp
 
 loop:
+	sleep, 500
 F12::
-	IfEqual, debug, 1, MsgBox, F12: you press F12
+doit:
 	IfEqual, minim, 0, goto, do
 	IfEqual, minim, 1, goto, undo
 
-	do:
-	IfEqual, debug, 1, MsgBox, DO: minim=%minim%
-	WinMinimizeAll
-	sleep, 1000
-	Setenv, minim, 1
-	Return
+		do:
+		IfEqual, debug, 1, MsgBox, F12: you press F12 DO: minim=%minim%
+		WinMinimizeAll
+		sleep, 1000
+		Setenv, minim, 1
+		goto, loop
 
-	undo:
-	IfEqual, debug, 1, MsgBox, UNDO: minim=%minim%
-	WinMinimizeAllUndo
-	sleep, 1000
-	Setenv, minim, 0
-	Return
+		undo:
+		IfEqual, debug, 1, MsgBox, F12: you press F12 UNDO: minim=%minim%
+		WinMinimizeAllUndo
+		sleep, 1000
+		Setenv, minim, 0
+		goto, loop
 
 source:
 	FileInstall, MinimizeAll.ahk, MinimizeAll.ahk, 1
 	run, "%A_ScriptDir%\MinimizeAll.ahk"
-	return
+	goto, loop
+
+ini:
+	run, "%A_ScriptDir%\MinimizeAll.ini"
+	goto, loop
 
 ;;--- Quit Debug Pause ---
 
@@ -151,27 +157,27 @@ Debug:
 	IfEqual, debug, 0, goto, enable
 	IfEqual, debug, 1, goto, disable
 
-	enable:
-	SetEnv, debug, 1
-	Goto, start
+		enable:
+		SetEnv, debug, 1
+		goto, loop
 
-	disable:
-	SetEnv, debug, 0
-	Goto, start
+		disable:
+		SetEnv, debug, 0
+		goto, loop
 
 pause:
 	Ifequal, pause, 0, goto, paused
 	Ifequal, pause, 1, goto, unpaused
 
-	paused:
-	Menu, Tray, Icon, %icofolder%\ico_pause.ico
-	SetEnv, pause, 1
-	goto, start
+		paused:
+		Menu, Tray, Icon, %icofolder%\ico_pause.ico
+		SetEnv, pause, 1
+		goto, loop
 
-	unpaused:	
-	Menu, Tray, Icon, %icofolder%\ico_time_w.ico
-	SetEnv, pause, 0
-	Goto, start
+		unpaused:	
+		Menu, Tray, Icon, %icofolder%\%logoicon%
+		SetEnv, pause, 0
+		goto, loop
 
 ;;--- Tray Bar (must be at end of file) ---
 
@@ -184,7 +190,7 @@ author:
 	Return
 
 secret:
-	msgbox, 49, %title%, title=%title% mode=%mode% version=%version% author=%author% logoicon=%logoicon% A_ScriptDir=%A_ScriptDir%`n`nDebug=%debug% exitaftermin=%exitaftermin%
+	msgbox, 49, %title%, title=%title% mode=%mode% version=%version% author=%author% logoicon=%logoicon% A_ScriptDir=%A_ScriptDir% Debug=%debug%`n`n%variables%
 	Return
 
 Version:
