@@ -13,7 +13,7 @@
 
 	SetEnv, title, MinimizeAll
 	SetEnv, mode, Minimize all F12
-	SetEnv, version, Version 2018-05-08-0540
+	SetEnv, version, Version 2018-05-10-1130
 	SetEnv, Author, LostByteSoft
 	SetEnv, icofolder, C:\Program Files\Common Files
 	Setenv, logoicon, ico_min.ico
@@ -104,6 +104,7 @@ start:
 	WinMinimizeAll
 	Sleep, 3000
 	IfEqual, debug, 1, msgbox, %variables%
+	edit:
 	IfEqual, exitaftermin, 1, goto, ExitApp
 
 loop:
@@ -134,7 +135,7 @@ source:
 
 ini:
 	run, "%A_ScriptDir%\MinimizeAll.ini"
-	goto, loop
+	goto, edit
 
 ;;--- Quit Debug Pause ---
 
